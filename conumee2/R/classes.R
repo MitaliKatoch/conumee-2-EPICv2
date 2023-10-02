@@ -206,3 +206,118 @@ setReplaceMethod("names", signature(x = "CNV.analysis"), function(x, value) {
 setMethod("coef", signature(object = "CNV.analysis"), function(object) {
     object@fit$coef
 }) 
+
+
+#' CNV.summaryanalisys class
+#' @description CNV summary analysis of grouped data of samples is stored in this class
+#' @return \code{CNV.summaryanalysis} class.
+#' @details Use \code{CNV.processsummary} to create.
+#' @examples
+
+#' # load RGset #
+#' RGset<-readRDS('path/to/RGset.rds')
+#' ### or use an Mset instead ###
+#'
+#' # process to Mset #
+#' Mset<-preprocessIllumina(RGset)
+#'
+#' # load conumee package and load via CNV.load method #
+#' library(conumee)
+#' Data.data<- CNV.load(Mset)
+
+#' # create annotation object; not complete and non working example below!! --> for reference and help read conumee vignette #
+#' anno <- CNV.create_anno(array_type = array_type, detail_regions = detail_regions)
+#'
+#'
+#' # fetch controls from your Data #
+#' Data.controls<- grep( 'Control', names(Data.data))
+#'
+#' # read in phenosheet of samples; an identifier column mapping CNV data to phenosheet (named ID here ) should be specified #
+#' test_pheno=read.csv(file ='../test_pheno.csv')
+#' keep <- match(test_pheno$ID, names(Data.data))
+#' Data.data_test<-Data.data[c(keep)]
+#'
+#' x<-CNV.processsummary(object=Data.data_test,
+#'                                 pheno=test_pheno,
+#'                                 labels='labels',
+#'                                 interest_groups=NULL,
+#'                                 identifier='ID',
+#'                                 controls=c('Control'),
+#'                                 anno= anno,
+#'                                 summary_plots=TRUE,
+#'                                 sample_plots=TRUE,
+#'                                 chr = "all",
+#'                                 chrX = TRUE,
+#'                                 chrY = TRUE,
+#'                                 centromere = TRUE,
+#'                                 main = NULL,
+#'                                 ylim = c(-1, 1),
+#'                                 set_par = TRUE,
+#'                                 save=TRUE,
+#'                                 path="Path/to/savings")
+#'
+#' # general information
+#' x
+#' show(x)
+#'
+#' # show or replace sample name
+#' names(x)
+#' names(x) <- 'Sample 1'
+#'
+#' @author Samir Jabari \email{samir.jabari@@fau.de}
+#' @export
+setClass("CNV.summaryanalysis", representation(names = "character", date = "character", intensity_vals = "list",
+cnv_seg_data = "list", cnvs = "list", gl_freqs= "list"
+        ))
+
+#' @rdname CNV.summaryanalysis-class
+#' @param object \code{CNV.summaryanalysis} object
+setMethod("show", "CNV.summaryanalysis", function(object) {
+        cat("CNV summaryanalysis object\n")
+        cat("   created   : ", object@date, "\n", sep = "")
+        cat("  @names      : ", object@names, "\n", sep = "")
+
+        if (length(object@intensity_vals) == 0 | is.null(object@intensity_vals)) {
+            cat("  @intensity_vals       : unavailable, run CNV.processsummary\n", sep = "")
+        } else {
+            cat("  @intensity_vals       : available (groups: ", length(object@intensity_vals), ")\n", sep = "")
+        }
+
+        if (length(object@cnv_seg_data) == 0 | is.null(object@cnv_seg_data)) {
+            cat("  @cnv_seg_data       : unavailable, run CNV.processsummary\n", sep = "")
+        } else {
+            cat("  @cnv_seg_data       : available (groups: ", length(object@cnv_seg_data), ")\n", sep = "")
+        }
+
+        if (length(object@cnvs) == 0 | is.null(object@cnvs)) {
+            cat("  @cnvs       : unavailable, run CNV.processsummary\n", sep = "")
+        } else {
+            cat("  @cnvs       : available (groups: ", length(object@cnvs), ")\n", sep = "")
+        }
+
+        if (length(object@gl_freqs) == 0 | is.null(object@gl_freqs)) {
+            cat("  @gl_freqs       : unavailable, run CNV.processsummary\n", sep = "")
+        } else {
+            cat("  @gl_freqs       : available (groups: ", length(object@gl_freqs), ")\n", sep = "")
+        }
+
+    })
+
+#' @rdname CNV.summaryanalysis-class
+#' @export
+setMethod("names", signature(x = "CNV.summaryanalysis"), function(x) {
+        x@names
+    })
+
+#' @rdname CNV.summaryanalysis-class
+#' @param x \code{CNV.summaryanalysis} object (defined by \code{show} generic).
+#' @param value Replacement names.
+#' @export
+setReplaceMethod("names", signature(x = "CNV.summaryanalysis"), function(x, value) {
+        if (length(value) == 1) {
+            x@name <- value
+        } else {
+            stop("need exactly one sample name.")
+        }
+        return(x)
+    })
